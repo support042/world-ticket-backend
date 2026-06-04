@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import admin, auth, checkout, events, orders
+from app.api.v1 import admin, auth, checkout, events, orders, payments
 
 api_router = APIRouter(prefix="/api")
 
@@ -9,3 +9,4 @@ api_router.include_router(events.router)
 api_router.include_router(checkout.router)
 api_router.include_router(orders.router)
 api_router.include_router(admin.router)
+api_router.include_router(payments.router)

@@ -195,6 +195,7 @@ class EventService:
             available=payload.available,
             capacity=payload.capacity,
             currency=payload.currency,
+            payment_link=payload.payment_link,
             is_popular=payload.isPopular,
             is_lowest_price=payload.isLowestPrice,
             features=payload.features,
@@ -225,6 +226,8 @@ class EventService:
             updates["capacity"] = payload.capacity
         if payload.currency is not None:
             updates["currency"] = payload.currency
+        if payload.payment_link is not None:
+            updates["payment_link"] = payload.payment_link
         if payload.isPopular is not None:
             updates["is_popular"] = payload.isPopular
         if payload.isLowestPrice is not None:

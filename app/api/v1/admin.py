@@ -13,6 +13,7 @@ from app.schemas.event import (
 from app.schemas.order import OrderListParams
 from app.services.event_service import EventService
 from app.services.order_service import OrderService
+from app.services.section_payment_service import SectionPaymentService
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -128,3 +129,36 @@ async def get_all_orders(
     service = OrderService(db)
     data = await service.get_all_orders(params)
     return ApiResponse.ok(data=data)
+
+
+@router.get(
+    "/payment-initiated-users",
+    summary="List users with initiated payments",
+)
+async def list_payment_initiated_users(
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=200),
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse:
+    service = SectionPaymentService(db)
+    data = await service.list_initiated_for_admin(page=page, limit=limit)
+    return ApiResponse.ok(data=data)
+
+
+@router.post(
+    "/section-payments/{initiation_id}/mark-paid",
+    summary="Mark a payment initiation as paid",
+)
+async def mark_payment_paid(
+    initiation_id: str,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse:
+    service = SectionPaymentService(db)
+    spi = await service.mark_paid(initiation_id)
+    return ApiResponse.ok(data={"initiation": {
+        "id": spi.id,
+        "isPaid": spi.is_paid,
+        "completedAt": spi.completed_at.isoformat() if spi.completed_at else None,
+    }})

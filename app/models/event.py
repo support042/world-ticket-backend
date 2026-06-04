@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Float, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Float, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -22,6 +22,9 @@ class Event(Base, TimestampMixin):
     venue: Mapped[str] = mapped_column(String(200), nullable=False)
     city: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     state: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    is_paid: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    payment_initiated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    payment_link: Mapped[str | None] = mapped_column(Text, nullable=True)
     country: Mapped[str] = mapped_column(String(100), nullable=False)
     image: Mapped[str | None] = mapped_column(Text, nullable=True)
     tickets_left_percent: Mapped[int] = mapped_column(
@@ -96,3 +99,41 @@ class Section(Base, TimestampMixin):
     features: Mapped[list] = mapped_column(JSONB, default=list, nullable=False)
     perks: Mapped[list] = mapped_column(JSONB, default=list, nullable=False)
     section_image: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class SectionPaymentInitiation(Base, TimestampMixin):
+    __tablename__ = "section_payment_initiations"
+
+    id: Mapped[str] = mapped_column(
+        String(36),
+        primary_key=True,
+        default=lambda: generate_id("spi"),
+    )
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        nullable=False,
+        index=True,
+    )
+    event_id: Mapped[str] = mapped_column(
+        String(36),
+        nullable=False,
+        index=True,
+    )
+    section_id: Mapped[str] = mapped_column(
+        String(36),
+        nullable=False,
+        index=True,
+    )
+    payment_initiated: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+    is_paid: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+    payment_link: Mapped[str | None] = mapped_column(Text, nullable=True)
+    initiated_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)

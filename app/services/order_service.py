@@ -34,14 +34,12 @@ class OrderService:
                 f"Only {section.available} tickets remain for this section",
             )
 
-        # Prevent duplicate orders for same Stripe PaymentIntent
         existing = await self.order_repo.get_by_stripe_intent(
             payload.stripePaymentIntentId,
         )
         if existing:
             return OrderOut.from_orm_model(existing)
 
-        # Build snapshots to preserve history
         event_snapshot = {
             "id": event.id,
             "title": event.title,
@@ -77,7 +75,6 @@ class OrderService:
             status="completed",
         )
 
-        # Decrement available tickets
         new_available = max(0, section.available - payload.quantity)
         await self.section_repo.update(section, {"available": new_available})
 
@@ -124,3 +121,17 @@ class OrderService:
             "page": params.page,
             "limit": params.limit,
         }
+
+    async def payment_initiated(self, user_id, section_id, event_id) -> str:
+        section = await self.section_repo.get_by_id(section_id)
+        if not section or section.event_id != event_id:
+            raise NotFoundError("Section")
+
+        event = await self.event_repo.get_by_id(event_id)
+        if not event:
+            raise NotFoundError("Event")
+
+        await self.section_repo.update(section, {"payment_initiated": True})
+        await self.event_repo.update(event, {"payment_initiated": True})
+
+        return "Payment Initiated Successfully"

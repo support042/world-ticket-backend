@@ -27,6 +27,9 @@ class SectionOut(BaseModel):
     name: str
     row: str
     price: float
+    is_paid: bool
+    payment_initiated: bool
+    payment_link: str | None
     available: int
     capacity: int
     currency: str
@@ -202,6 +205,7 @@ class CreateSectionRequest(BaseModel):
     capacity: int
     currency: str = "USD"
     isPopular: bool = False
+    payment_link: str | None = None
     isLowestPrice: bool = False
     features: list[str] = []
     perks: list[str] = []
@@ -214,12 +218,43 @@ class UpdateSectionRequest(BaseModel):
     price: float | None = None
     available: int | None = None
     capacity: int | None = None
+    payment_link: str | None = None
     currency: str | None = None
     isPopular: bool | None = None
     isLowestPrice: bool | None = None
     features: list[str] | None = None
     perks: list[str] | None = None
     sectionImage: str | None = None
+
+
+class CreateInitiationRequest(BaseModel):
+    paymentLink: str | None = None
+
+
+class InitiatedSectionSchema(BaseModel):
+    initiationId: str
+    sectionId: str
+    sectionName: str
+    eventId: str
+    eventTitle: str
+    initiatedAt: datetime | None
+    isPaid: bool
+    paymentLink: str | None
+
+
+class AdminInitiatedUserOut(BaseModel):
+    userId: str
+    email: str
+    firstName: str
+    lastName: str
+    initiatedSections: list[InitiatedSectionSchema]
+
+
+class AdminInitiationListOut(BaseModel):
+    users: list[AdminInitiatedUserOut]
+    total: int
+    page: int
+    limit: int
 
 
 class EventListParams(BaseModel):
