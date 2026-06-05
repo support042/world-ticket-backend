@@ -1,6 +1,6 @@
 # World Ticket Backend
 
-Production-ready Backend API for the FIFA World Cup 2026 Ticketing Platform.
+Production-ready Backend API for Ticketing Platform.
 
 ## Features
 - FastAPI with Clean Architecture

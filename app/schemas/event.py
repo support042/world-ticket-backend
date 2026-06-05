@@ -27,8 +27,6 @@ class SectionOut(BaseModel):
     name: str
     row: str
     price: float
-    is_paid: bool
-    payment_initiated: bool
     payment_link: str | None
     available: int
     capacity: int
