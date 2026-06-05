@@ -78,6 +78,7 @@ class Section(Base, TimestampMixin):
     price: Mapped[float] = mapped_column(Float, nullable=False)
     available: Mapped[int] = mapped_column(Integer, nullable=False)
     capacity: Mapped[int] = mapped_column(Integer, nullable=False)
+    payment_link: Mapped[str | None] = mapped_column(Text, nullable=True)
     currency: Mapped[str] = mapped_column(
         String(10),
         default="USD",
