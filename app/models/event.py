@@ -22,9 +22,6 @@ class Event(Base, TimestampMixin):
     venue: Mapped[str] = mapped_column(String(200), nullable=False)
     city: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     state: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    is_paid: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    payment_initiated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    payment_link: Mapped[str | None] = mapped_column(Text, nullable=True)
     country: Mapped[str] = mapped_column(String(100), nullable=False)
     image: Mapped[str | None] = mapped_column(Text, nullable=True)
     tickets_left_percent: Mapped[int] = mapped_column(

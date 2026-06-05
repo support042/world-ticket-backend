@@ -29,7 +29,7 @@ async def create_first_admin():
                 role="admin",
             )
             await db.commit()
-            print(f"Successfully created admin: {new_admin.email}")
+            print(f"Successfully created admin: {email}")
         except Exception as e:
             await db.rollback()
             print(f"Failed to create admin: {e}")
