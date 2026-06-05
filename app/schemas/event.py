@@ -27,7 +27,7 @@ class SectionOut(BaseModel):
     name: str
     row: str
     price: float
-    payment_link: str | None
+    payment_link: str | None = None
     available: int
     capacity: int
     currency: str
@@ -47,6 +47,7 @@ class SectionOut(BaseModel):
             available=section.available,
             capacity=section.capacity,
             currency=section.currency,
+            payment_link=section.payment_link,
             isPopular=section.is_popular,
             isLowestPrice=section.is_lowest_price,
             features=section.features,
