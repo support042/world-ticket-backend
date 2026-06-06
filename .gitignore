@@ -17,5 +17,5 @@ htmlcov/
 .coverage
 *.log
 *.sqlite3
-alembic/versions/*.py
+# alembic/versions/*.py
 !alembic/versions/.gitkeep
