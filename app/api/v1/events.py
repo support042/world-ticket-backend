@@ -70,5 +70,5 @@ async def list_user_payment_initiated(
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse:
     service = SectionPaymentService(db)
-    data = await service.list_initiated_for_user(user, page=page, limit=limit)
+    data = await service.list_initiated_for_user(user.id, page=page, limit=limit)  # noqa: E501
     return ApiResponse.ok(data=data)
