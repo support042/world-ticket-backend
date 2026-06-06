@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.event import Event, Section, SectionPaymentInitiation
@@ -18,7 +18,7 @@ class SectionPaymentInitiationRepository:
 
     async def get_by_id(self, spi_id: str) -> SectionPaymentInitiation | None:
         result = await self.db.execute(
-            select(SectionPaymentInitiation).where(SectionPaymentInitiation.id == spi_id)
+            select(SectionPaymentInitiation).where(SectionPaymentInitiation.id == spi_id)  # noqa: S106, E501
         )
         return result.scalar_one_or_none()
 
@@ -36,7 +36,7 @@ class SectionPaymentInitiationRepository:
 
         stmt = (
             select(User, SectionPaymentInitiation, Section, Event)
-            .join(SectionPaymentInitiation, User.id == SectionPaymentInitiation.user_id)
+            .join(SectionPaymentInitiation, User.id == SectionPaymentInitiation.user_id)  # noqa: S106, E501
             .join(Section, Section.id == SectionPaymentInitiation.section_id)
             .join(Event, Event.id == SectionPaymentInitiation.event_id)
             .where(base_where)
@@ -45,7 +45,7 @@ class SectionPaymentInitiationRepository:
             .limit(limit)
         )
 
-        count_stmt = select(func.count()).select_from(SectionPaymentInitiation).where(base_where)
+        count_stmt = select(func.count()).select_from(SectionPaymentInitiation).where(base_where)  # noqa: S106, E501
 
         result = await self.db.execute(stmt)
         rows = result.all()
@@ -65,3 +65,38 @@ class SectionPaymentInitiationRepository:
         )
         result = await self.db.execute(stmt)
         return result.scalars().all()
+
+    async def list_initiated_for_user(
+        self,
+        page: int,
+        limit: int,
+        user_id: str,
+    ):
+        base_where = and_(
+            SectionPaymentInitiation.payment_initiated.is_(True),
+            SectionPaymentInitiation.user_id == user_id,
+        )
+
+        stmt = (
+            select(User, SectionPaymentInitiation, Section, Event)
+            .join(
+                SectionPaymentInitiation,
+                User.id == SectionPaymentInitiation.user_id,
+            )
+            .join(Section, Section.id == SectionPaymentInitiation.section_id)
+            .join(Event, Event.id == SectionPaymentInitiation.event_id)
+            .where(base_where)
+            .order_by(SectionPaymentInitiation.initiated_at.desc())
+            .offset((page - 1) * limit)
+            .limit(limit)
+        )
+
+        count_stmt = select(func.count()).select_from(SectionPaymentInitiation).where(base_where)  # noqa: S106, E501
+
+        result = await self.db.execute(stmt)
+        rows = result.all()
+
+        total_result = await self.db.execute(count_stmt)
+        total = total_result.scalar_one()
+
+        return rows, total

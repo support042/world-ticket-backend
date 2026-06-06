@@ -157,8 +157,12 @@ async def mark_payment_paid(
 ) -> ApiResponse:
     service = SectionPaymentService(db)
     spi = await service.mark_paid(initiation_id)
-    return ApiResponse.ok(data={"initiation": {
-        "id": spi.id,
-        "isPaid": spi.is_paid,
-        "completedAt": spi.completed_at.isoformat() if spi.completed_at else None,
-    }})
+    return ApiResponse.ok(
+        data={
+            "initiation": {
+                "id": spi.id,
+                "isPaid": spi.is_paid,
+                "completedAt": spi.completed_at.isoformat() if spi.completed_at else None,  # noqa: S106, E501
+            }
+        }
+    )

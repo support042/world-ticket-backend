@@ -275,3 +275,31 @@ class EventListParams(BaseModel):
     @classmethod
     def limit_range(cls, v: int) -> int:
         return min(max(1, v), 100)
+
+
+class UserProfileOut(BaseModel):
+    userId: str
+    email: str
+    firstName: str
+    lastName: str
+
+
+class UserInitiatedSectionItem(BaseModel):
+    initiationId: str
+    sectionId: str
+    sectionName: str
+    eventId: str
+    eventTitle: str
+    paymentLink: str | None
+    isPaid: bool
+    paymentInitiated: bool
+    initiatedAt: datetime | None
+    completedAt: datetime | None
+
+
+class UserInitiationListOut(BaseModel):
+    user: UserProfileOut | None
+    initiatedSections: list[UserInitiatedSectionItem]
+    total: int
+    page: int
+    limit: int

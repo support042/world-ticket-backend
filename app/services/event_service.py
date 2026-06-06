@@ -159,7 +159,7 @@ class EventService:
         if payload.teams is not None:
             updates["teams"] = [t.model_dump() for t in payload.teams]
         if payload.categories is not None:
-            updates["categories"] = [c.model_dump() for c in payload.categories]
+            updates["categories"] = [c.model_dump() for c in payload.categories]  # noqa: S106, E501
         if payload.settings is not None:
             updates["settings"] = payload.settings.model_dump()
         if payload.status is not None:

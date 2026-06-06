@@ -133,5 +133,11 @@ class SectionPaymentInitiation(Base, TimestampMixin):
         nullable=False,
     )
     payment_link: Mapped[str | None] = mapped_column(Text, nullable=True)
-    initiated_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    completed_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    initiated_at: Mapped[str | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    completed_at: Mapped[str | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )

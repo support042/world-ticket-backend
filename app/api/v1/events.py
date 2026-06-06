@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.dependencies import get_current_user
 from app.db.session import get_db
 from app.schemas.common import ApiResponse
-from app.schemas.event import EventListParams
+from app.schemas.event import EventListParams, UserInitiationListOut
 from app.services.event_service import EventService
+from app.services.section_payment_service import SectionPaymentService
 
 router = APIRouter(prefix="/events", tags=["Events"])
 
@@ -53,4 +55,20 @@ async def get_sections(
 ) -> ApiResponse:
     service = EventService(db)
     sections = await service.get_sections(event_id)
-    return ApiResponse.ok(data={"sections": [s.model_dump() for s in sections]})
+    return ApiResponse.ok(data={"sections": [s.model_dump() for s in sections]})  # noqa: S106, E501
+
+
+@router.get(
+    "/sections/my-initiated-payments",
+    summary="List user's initiated payments",
+    responses={200: {"model": ApiResponse[UserInitiationListOut]}},
+)
+async def list_user_payment_initiated(
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=200),
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse:
+    service = SectionPaymentService(db)
+    data = await service.list_initiated_for_user(user, page=page, limit=limit)
+    return ApiResponse.ok(data=data)

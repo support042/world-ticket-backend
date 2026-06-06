@@ -3,8 +3,13 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
-from app.repositories.event_repository import EventRepository, SectionRepository
-from app.repositories.section_payment_repository import SectionPaymentInitiationRepository
+from app.repositories.event_repository import (
+    EventRepository,
+    SectionRepository,
+)
+from app.repositories.section_payment_repository import (
+    SectionPaymentInitiationRepository,
+)
 
 
 class SectionPaymentService:
@@ -14,7 +19,12 @@ class SectionPaymentService:
         self.event_repo = EventRepository(db)
         self.section_repo = SectionRepository(db)
 
-    async def initiate_payment(self, user, section_id: str, payment_link: str | None = None):
+    async def initiate_payment(
+        self,
+        user,
+        section_id: str,
+        payment_link: str | None = None,
+    ):
         section = await self.section_repo.get_by_id(section_id)
         if not section:
             raise NotFoundError("Section")
@@ -34,7 +44,6 @@ class SectionPaymentService:
 
     async def list_initiated_for_admin(self, page: int = 1, limit: int = 50):
         rows, total = await self.spi_repo.list_initiated_for_admin(page, limit)
-        # rows are tuples (User, SPI, Section, Event)
         users_map: dict = {}
         total_items = total
         for user, spi, section, event in rows:
@@ -56,7 +65,7 @@ class SectionPaymentService:
                     "sectionName": section.name,
                     "eventId": event.id,
                     "eventTitle": event.title,
-                    "initiatedAt": spi.initiated_at.isoformat() if spi.initiated_at else None,
+                    "initiatedAt": spi.initiated_at.isoformat() if spi.initiated_at else None,  # noqa: S106, E501
                     "isPaid": spi.is_paid,
                     "paymentLink": spi.payment_link,
                 }
@@ -76,3 +85,57 @@ class SectionPaymentService:
         updates = {"is_paid": True, "completed_at": datetime.utcnow()}
         spi = await self.spi_repo.update(spi, updates)
         return spi
+
+    async def list_initiated_for_user(
+        self,
+        user_id: str,
+        page: int = 1,
+        limit: int = 50,
+    ):
+        rows, total = await self.spi_repo.list_initiated_for_user(
+            page,
+            limit,
+            user_id,
+        )
+
+        if not rows:
+            return {
+                "user": None,
+                "initiatedSections": [],
+                "total": 0,
+                "page": page,
+                "limit": limit,
+            }
+
+        first_user = rows[0][0]
+        user_profile = {
+            "userId": first_user.id,
+            "email": first_user.email,
+            "firstName": first_user.first_name,
+            "lastName": first_user.last_name,
+        }
+
+        initiated_sections = []
+        for _, spi, section, event in rows:
+            initiated_sections.append(
+                {
+                    "initiationId": spi.id,
+                    "sectionId": section.id,
+                    "sectionName": section.name,
+                    "eventId": event.id,
+                    "eventTitle": event.title,
+                    "initiatedAt": spi.initiated_at,
+                    "paymentLink": spi.payment_link,
+                    "isPaid": spi.is_paid,
+                    "paymentInitiated": spi.payment_initiated,
+                    "completedAt": spi.completed_at,
+                }
+            )
+
+        return {
+            "user": user_profile,
+            "initiatedSections": initiated_sections,
+            "total": total,
+            "page": page,
+            "limit": limit,
+        }
