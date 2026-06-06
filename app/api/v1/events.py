@@ -8,10 +8,10 @@ from app.schemas.event import EventListParams, UserInitiationListOut
 from app.services.event_service import EventService
 from app.services.section_payment_service import SectionPaymentService
 
-router = APIRouter(prefix="/events", tags=["Events"])
+router = APIRouter(prefix="", tags=["Events"])
 
 
-@router.get("", summary="List all events")
+@router.get("/events", summary="List all events")
 async def list_events(
     search: str | None = Query(None),
     location: str | None = Query(None),
@@ -38,7 +38,7 @@ async def list_events(
     return ApiResponse.ok(data=data)
 
 
-@router.get("/{event_id}", summary="Get single event details")
+@router.get("/events/{event_id}", summary="Get single event details")
 async def get_event(
     event_id: str,
     db: AsyncSession = Depends(get_db),
@@ -48,7 +48,7 @@ async def get_event(
     return ApiResponse.ok(data={"event": event.model_dump()})
 
 
-@router.get("/{event_id}/sections", summary="Get sections for an event")
+@router.get("/events/{event_id}/sections", summary="Get sections for an event")
 async def get_sections(
     event_id: str,
     db: AsyncSession = Depends(get_db),
