@@ -21,12 +21,6 @@ async def stripe_webhook(
     request: Request,
     stripe_signature: str | None = Header(None, alias="stripe-signature"),
 ) -> dict:
-    """
-    Receive and verify Stripe webhook events.
-
-    Stripe sends a signed POST to this endpoint. We verify the signature using
-    STRIPE_WEBHOOK_SECRET and handle relevant events.
-    """
     if not settings.STRIPE_WEBHOOK_SECRET:
         logger.warning("STRIPE_WEBHOOK_SECRET is not set — webhook signature verification skipped")  # noqa: E501
 
