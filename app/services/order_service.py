@@ -1,5 +1,9 @@
+import asyncio
+
+import stripe
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.exceptions import ForbiddenError, NotFoundError, ValidationError
 from app.repositories.event_repository import (
     EventRepository,
@@ -21,6 +25,18 @@ class OrderService:
         payload: CreateOrderRequest,
         user_id: str | None,
     ) -> OrderOut:
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        try:
+            pi = await asyncio.to_thread(
+                stripe.PaymentIntent.retrieve,
+                payload.stripePaymentIntentId,
+            )
+        except stripe.error.StripeError as exc:
+            raise ValidationError(f"Invalid payment intent: {exc}") from exc
+
+        if pi.status != "succeeded":
+            raise ValidationError(f"Payment has not been completed (status: {pi.status})")  # noqa: E501
+
         event = await self.event_repo.get_by_id(payload.eventId)
         if not event:
             raise NotFoundError("Event")
@@ -121,17 +137,3 @@ class OrderService:
             "page": params.page,
             "limit": params.limit,
         }
-
-    async def payment_initiated(self, user_id, section_id, event_id) -> str:
-        section = await self.section_repo.get_by_id(section_id)
-        if not section or section.event_id != event_id:
-            raise NotFoundError("Section")
-
-        event = await self.event_repo.get_by_id(event_id)
-        if not event:
-            raise NotFoundError("Event")
-
-        await self.section_repo.update(section, {"payment_initiated": True})
-        await self.event_repo.update(event, {"payment_initiated": True})
-
-        return "Payment Initiated Successfully"

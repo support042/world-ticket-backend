@@ -1,3 +1,5 @@
+import asyncio
+
 import stripe
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +13,7 @@ from app.schemas.checkout import CheckoutIntentRequest, CheckoutIntentResponse
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-_SERVICE_FEE_PERCENT = 0.05  # 5% service fee added to ticket price
+_SERVICE_FEE_PERCENT = 0.05
 
 
 class CheckoutService:
@@ -45,7 +47,8 @@ class CheckoutService:
         total = base_amount + fee
         amount_cents = int(round(total * 100))
 
-        intent = stripe.PaymentIntent.create(
+        intent = await asyncio.to_thread(
+            stripe.PaymentIntent.create,
             amount=amount_cents,
             currency=payload.currency.lower(),
             metadata={
