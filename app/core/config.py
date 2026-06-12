@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "World Ticket API"
     APP_VERSION: str = "1.0.0"
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
+    FRONTEND_URL: str = "https://ticketapoint.com"
 
     SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"

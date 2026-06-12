@@ -1,4 +1,4 @@
-from sqlalchemy import Float, Integer, String
+from sqlalchemy import Boolean, Float, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -42,3 +42,6 @@ class Order(Base, TimestampMixin):
         nullable=False,
         index=True,
     )
+    tickets: Mapped[list | None] = mapped_column(JSONB, nullable=True, default=list)
+    gift_option: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
+    team_support: Mapped[str | None] = mapped_column(String(100), nullable=True)
