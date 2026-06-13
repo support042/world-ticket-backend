@@ -77,24 +77,33 @@ class OrderService:
             "currency": section.currency,
         }
 
-        order = await self.order_repo.create(
-            user_id=user_id,
-            event_id=event.id,
-            section_id=section.id,
-            event_snapshot=event_snapshot,
-            section_snapshot=section_snapshot,
-            quantity=payload.quantity,
-            contact_info=payload.contactInfo.model_dump(),
-            total_amount=payload.totalAmount,
-            payment_method=payload.paymentMethod,
-            stripe_payment_intent_id=payload.stripePaymentIntentId,
-            status="completed",
-        )
+        from sqlalchemy.exc import IntegrityError
 
-        new_available = max(0, section.available - payload.quantity)
-        await self.section_repo.update(section, {"available": new_available})
-
-        return OrderOut.from_orm_model(order)
+        try:
+            order = await self.order_repo.create(
+                user_id=user_id,
+                event_id=event.id,
+                section_id=section.id,
+                event_snapshot=event_snapshot,
+                section_snapshot=section_snapshot,
+                quantity=payload.quantity,
+                contact_info=payload.contactInfo.model_dump(),
+                total_amount=payload.totalAmount,
+                payment_method=payload.paymentMethod,
+                stripe_payment_intent_id=payload.stripePaymentIntentId,
+                status="completed",
+            )
+            new_available = max(0, section.available - payload.quantity)
+            await self.section_repo.update(section, {"available": new_available})
+            return OrderOut.from_orm_model(order)
+        except IntegrityError:
+            await self.db.rollback()
+            existing = await self.order_repo.get_by_stripe_intent(
+                payload.stripePaymentIntentId,
+            )
+            if existing:
+                return OrderOut.from_orm_model(existing)
+            raise
 
     async def get_user_orders(
         self,
